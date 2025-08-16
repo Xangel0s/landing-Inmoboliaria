@@ -58,7 +58,7 @@ export const ContactForm = () => {
         nombre: values.fullName,
         whatsapp: values.whatsapp,
         email: values.email,
-        tipoPropiedad: values.propertyType,
+        tipopropiedad: values.propertyType,
         presupuesto: values.budget,
         zona: values.zone,
         mensaje: values.message,
