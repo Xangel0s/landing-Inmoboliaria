@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess } from "@/utils/toast";
+import { supabase } from "@/lib/supabaseClient";
 import { Card } from "@/components/ui/card";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -51,26 +52,22 @@ export const ContactForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mapear los nombres de los campos al formato esperado por Google Sheets
-    const data = {
-      nombre: values.fullName,
-      whatsapp: values.whatsapp,
-      email: values.email,
-      tipoPropiedad: values.propertyType,
-      presupuesto: values.budget,
-      zona: values.zone,
-      mensaje: values.message,
-    };
-    try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbyTu6W3fPmdUQQQdPaMRXjwYC4G9ndcCcoT_avgZC5xMFZN71NuRqa1UIwiepcC2lxo/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
-      });
-      const result = await response.json();
-      showSuccess(result.message || "✅ Datos enviados correctamente. Un asesor se pondrá en contacto contigo por WhatsApp.");
+    // Guardar los datos en Supabase
+    const { error } = await supabase.from('leads').insert([
+      {
+        nombre: values.fullName,
+        whatsapp: values.whatsapp,
+        email: values.email,
+        tipoPropiedad: values.propertyType,
+        presupuesto: values.budget,
+        zona: values.zone,
+        mensaje: values.message,
+      }
+    ]);
+    if (!error) {
+      showSuccess("✅ Datos enviados correctamente. Un asesor se pondrá en contacto contigo por WhatsApp.");
       form.reset();
-    } catch (error) {
+    } else {
       showSuccess("❌ Hubo un error al enviar los datos. Intenta nuevamente.");
     }
   }
