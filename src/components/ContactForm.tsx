@@ -43,16 +43,36 @@ export const ContactForm = () => {
       fullName: "",
       whatsapp: "",
       email: "",
+      propertyType: "",
       budget: "",
       zone: "",
       message: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Datos del formulario:", values);
-    showSuccess("✅ Gracias, hemos recibido tu información. Un asesor se pondrá en contacto contigo por WhatsApp.");
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Mapear los nombres de los campos al formato esperado por Google Sheets
+    const data = {
+      nombre: values.fullName,
+      whatsapp: values.whatsapp,
+      email: values.email,
+      tipoPropiedad: values.propertyType,
+      presupuesto: values.budget,
+      zona: values.zone,
+      mensaje: values.message,
+    };
+    try {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbyTu6W3fPmdUQQQdPaMRXjwYC4G9ndcCcoT_avgZC5xMFZN71NuRqa1UIwiepcC2lxo/exec", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+      const result = await response.json();
+      showSuccess(result.message || "✅ Datos enviados correctamente. Un asesor se pondrá en contacto contigo por WhatsApp.");
+      form.reset();
+    } catch (error) {
+      showSuccess("❌ Hubo un error al enviar los datos. Intenta nuevamente.");
+    }
   }
 
   const { ref, isVisible } = useScrollAnimation();
